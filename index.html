@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galactic Mindfire: Cyber Shot & Brain</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Style CSS Eksternal -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="h-screen w-screen bg-slate-950 text-white flex flex-col justify-center items-center overflow-hidden font-rajdhani select-none">
+
+    <!-- Game Container -->
+    <div id="game-container" class="relative w-full max-w-4xl h-full max-h-[700px] border-2 border-cyan-500/50 rounded-lg shadow-[0_0_30px_rgba(6,182,212,0.3)] bg-slate-900/90 overflow-hidden flex flex-col">
+        
+        <!-- CRT Overlay & Grid Lines Effect -->
+        <div class="pointer-events-none absolute inset-0 z-10 scanlines opacity-40"></div>
+        <div class="pointer-events-none absolute inset-0 z-0 cyber-grid opacity-20"></div>
+
+        <!-- Header HUD -->
+        <div class="relative z-20 flex justify-between items-center px-6 py-3 border-b border-cyan-500/30 bg-slate-950/80 backdrop-blur-md">
+            <!-- Health & Score -->
+            <div class="flex items-center space-x-6">
+                <div>
+                    <div class="text-xs text-cyan-400 font-orbitron tracking-wider">HULL INTEGRITY</div>
+                    <div class="w-32 bg-slate-800 h-3 rounded-full overflow-hidden border border-cyan-500/30 mt-1">
+                        <div id="hp-bar" class="bg-gradient-to-r from-red-500 via-yellow-500 to-emerald-400 h-full w-full transition-all duration-300"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-xs text-cyan-400 font-orbitron tracking-wider">SCORE</div>
+                    <div id="score-text" class="text-xl font-bold font-orbitron text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]">000000</div>
+                </div>
+            </div>
+
+            <!-- Stage & Overdrive -->
+            <div class="flex items-center space-x-6">
+                <div class="text-center">
+                    <div class="text-xs text-cyan-400 font-orbitron tracking-wider">STAGE</div>
+                    <div id="stage-text" class="text-2xl font-black font-orbitron text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">1</div>
+                </div>
+                <!-- Manual Power-Up Quiz Trigger -->
+                <button id="btn-quiz-trigger" class="hidden relative group px-4 py-2 bg-gradient-to-r from-fuchsia-600 to-pink-600 rounded-md font-orbitron font-bold text-xs tracking-wider shadow-[0_0_15px_rgba(217,70,239,0.5)] hover:shadow-[0_0_25px_rgba(217,70,239,0.8)] hover:scale-105 active:scale-95 transition-all">
+                    <span class="flex items-center space-x-1">
+                        <span>⚡ OVERDRIVE CORE</span>
+                    </span>
+                    <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Active Buff Status Bar -->
+        <div id="buff-bar" class="relative z-20 flex justify-center gap-3 px-4 py-1 bg-slate-900/60 text-xs font-orbitron">
+            <span id="buff-active" class="text-emerald-400 tracking-wider">NORMAL WEAPONS ONLINE</span>
+        </div>
+
+        <!-- Canvas Game Arena -->
+        <div class="relative flex-1 w-full h-full">
+            <canvas id="gameCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+
+            <!-- START SCREEN OVERLAY -->
+            <div id="start-overlay" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/90 p-6 text-center backdrop-blur-sm">
+                <h1 class="text-4xl md:text-6xl font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-pink-500 drop-shadow-[0_0_20px_rgba(6,182,212,0.5)] animate-pulse">
+                    GALACTIC MINDFIRE
+                </h1>
+                <p class="text-cyan-300 text-sm md:text-base max-w-lg mt-3 font-semibold">
+                    Cybernetic Arcade Shooter x High-Speed Knowledge Challenge.
+                </p>
+                <div class="my-6 p-4 bg-slate-900/80 border border-cyan-500/30 rounded-lg max-w-md text-left text-xs text-slate-300 space-y-2">
+                    <p>🎯 <span class="text-cyan-400 font-bold">Gerak:</span> Pakai <kbd class="px-1 bg-slate-800 border border-slate-600 rounded">A</kbd><kbd class="px-1 bg-slate-800 border border-slate-600 rounded">D</kbd> atau <kbd class="px-1 bg-slate-800 border border-slate-600 rounded">Mouse</kbd></p>
+                    <p>💥 <span class="text-cyan-400 font-bold">Tembak:</span> Tahan <kbd class="px-1 bg-slate-800 border border-slate-600 rounded">Spasi</kbd> / <kbd class="px-1 bg-slate-800 border border-slate-600 rounded">Klik Kiri</kbd></p>
+                    <p>🧠 <span class="text-pink-400 font-bold">Kuis Stage & Power-Up:</span> Jawab kuis umum dalam <span class="text-yellow-400 font-bold">15 Detik</span> saat peralihan stage / mengaktifkan Overdrive untuk memperkuat senjata!</p>
+                </div>
+                <button id="btn-start" class="px-8 py-4 bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-pink-500 font-orbitron font-black text-lg tracking-widest rounded-lg shadow-[0_0_25px_rgba(6,182,212,0.6)] hover:shadow-[0_0_40px_rgba(217,70,239,0.9)] hover:scale-105 active:scale-95 transition-all">
+                    LAUNCH MISSION
+                </button>
+            </div>
+
+            <!-- QUIZ MODAL OVERLAY -->
+            <div id="quiz-overlay" class="hidden absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-950/95 p-6 backdrop-blur-md">
+                <div class="relative w-full max-w-xl bg-slate-900 border-2 border-fuchsia-500/60 rounded-xl p-6 shadow-[0_0_50px_rgba(217,70,239,0.4)] flex flex-col">
+                    
+                    <!-- Timer & Quiz Header -->
+                    <div class="flex justify-between items-center border-b border-fuchsia-500/30 pb-4 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="animate-ping h-3 w-3 rounded-full bg-fuchsia-400 opacity-75"></span>
+                            <span class="font-orbitron font-bold text-sm tracking-widest text-fuchsia-400" id="quiz-title-text">STAGE CLEAR QUIZ</span>
+                        </div>
+                        <!-- Circular Timer -->
+                        <div class="relative w-12 h-12 flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90">
+                                <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" class="text-slate-800" fill="transparent" />
+                                <circle id="timer-circle" cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" class="text-fuchsia-500 transition-all duration-1000" fill="transparent" stroke-dasharray="125.6" stroke-dashoffset="0" />
+                            </svg>
+                            <span id="quiz-timer" class="absolute font-orbitron font-bold text-lg text-yellow-300">15</span>
+                        </div>
+                    </div>
+
+                    <!-- Question Box -->
+                    <div class="mb-6">
+                        <span class="text-xs text-cyan-400 font-orbitron font-semibold tracking-wider block mb-1">PERTANYAAN:</span>
+                        <h3 id="quiz-question" class="text-lg md:text-xl font-bold text-slate-100 leading-snug">
+                            Loading Question...
+                        </h3>
+                    </div>
+
+                    <!-- Answers Grid -->
+                    <div id="quiz-answers" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                        <!-- Dynamic Buttons Inject Here -->
+                    </div>
+
+                    <!-- Feedback Alert -->
+                    <div id="quiz-feedback" class="hidden text-center font-orbitron font-bold text-sm p-2 rounded bg-slate-800 border">
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME OVER OVERLAY -->
+            <div id="gameover-overlay" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-950/95 p-6 text-center backdrop-blur-md">
+                <h2 class="text-5xl font-black font-orbitron text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.7)] animate-bounce mb-2">
+                    CRITICAL FAILURE
+                </h2>
+                <p class="text-slate-400 font-semibold mb-6">Kapalmu hancur dalam pertempuran sengit.</p>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-lg min-w-[250px] mb-6 font-orbitron">
+                    <div class="text-xs text-slate-500">FINAL SCORE</div>
+                    <div id="final-score" class="text-3xl font-bold text-yellow-400">0</div>
+                    <div class="text-xs text-slate-500 mt-2">REACHED STAGE</div>
+                    <div id="final-stage" class="text-xl font-bold text-cyan-400">1</div>
+                </div>
+                <button id="btn-restart" class="px-8 py-3 bg-gradient-to-r from-red-600 to-orange-500 font-orbitron font-bold text-md tracking-wider rounded-lg shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:scale-105 active:scale-95 transition-all">
+                    TRY AGAIN
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Script JS Eksternal -->
+    <script src="script.js"></script>
+</body>
+</html>
